@@ -1,2 +1,3 @@
-# jwb-products-grid-load-more
-Add load more functionality to JetWooBuilder Products Grid widget.
+# JetWooBuilder Products Grid Load More
+
+Add ajax load more functionality to JetWooBuilder Products Grid widget.
