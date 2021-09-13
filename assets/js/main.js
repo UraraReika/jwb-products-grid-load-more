@@ -3,7 +3,7 @@
 	"use strict";
 
 	let JetWooBuilderPGLM = {
-		
+
 		init: function () {
 			let widgets = {
 				'jet-woo-products.default' : JetWooBuilderPGLM.productsGridLoadMore
@@ -15,17 +15,18 @@
 		},
 
 		productsGridLoadMore: function ( $scope ) {
-			let $settings = $scope.data( 'settings' );
 
-			if ( $settings && $settings.enable_load_more ) {
-				let triggerId = '#' + $settings.load_more_trigger_id
+			let $widgetSettings = $scope.data( 'settings' );
+
+			if ( $widgetSettings && $widgetSettings.enable_load_more ) {
+				let triggerId = '#' + $widgetSettings.load_more_trigger_id
 
 				$( document ).on( 'click', triggerId, function ( event ) {
+
 					event.preventDefault();
 
-					let grid = $scope.find( '.pglm-settings-holder' );
-
-					let $settings = $scope.find( '.pglm-settings-holder' ).data( 'load-more-settings' );
+					let wrapper = $scope.find( '.pglm-settings-holder' ),
+						$loadMoreSettings = $( wrapper ).data( 'load-more-settings' );
 
 					$.ajax( {
 						type: 'POST',
@@ -33,13 +34,14 @@
 						dataType: 'json',
 						data: {
 							action: 'jet_woo_builder_load_more',
-							settings: $settings
+							settings: $loadMoreSettings
 						},
 					} ).done( function( response ) {
 						let $html = $( response.data.html );
 
-						$(grid).parent().html( $html );
+						$( wrapper ).parent().html( $html );
 					} );
+
 				} );
 			}
 		}

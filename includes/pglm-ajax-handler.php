@@ -1,9 +1,12 @@
 <?php
 
+/**
+ * Handle ajax request.
+ */
 function pglm_load_more_products() {
 
-	$settings = $_POST['settings'];
-	$attributes = [];
+	$settings           = $_POST['settings'];
+	$attributes         = [];
 	$settings['number'] += 4;
 
 	$shortcode = jet_woo_builder_shortcodes()->get_shortcode( 'jet-woo-products' );
@@ -16,7 +19,11 @@ function pglm_load_more_products() {
 		$attributes[ $attr ] = $attr_val;
 	}
 
-	$html = '<div class="pglm-settings-holder" data-load-more-settings="' . htmlspecialchars( json_encode( $attributes ) ) . '">' . $shortcode->do_shortcode( $settings ) . '</div>';
+	$html = sprintf(
+		'<div class="pglm-settings-holder" data-load-more-settings="%s">%s</div>',
+		htmlspecialchars( json_encode( $attributes ) ),
+		$shortcode->do_shortcode( $settings )
+	);
 
 	$response['html'] = $html;
 
