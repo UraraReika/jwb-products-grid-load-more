@@ -1,143 +1,106 @@
 <?php
 
-class PGLM_Load_More_Integration {
+/**
+ * Set custom load more functionality attributes for Products Grid widget.
+ *
+ * @param $attributes
+ * @param $settings
+ *
+ * @return string
+ */
+function pglm_get_widget_attributes( $attributes, $settings ) {
 
-	public $settings = null;
-	public $widget   = null;
+	$load_more        = isset( $settings['enable_load_more'] ) ? filter_var( $settings['enable_load_more'], FILTER_VALIDATE_BOOLEAN ) : false;
+	$carousel_enabled = isset( $settings['carousel_enabled'] ) ? filter_var( $settings['carousel_enabled'], FILTER_VALIDATE_BOOLEAN ) : false;
 
-	public function __construct() {
-		add_action( 'jet-woo-builder/shortcodes/jet-woo-products/loop-start', [ $this, 'pglm_add_load_more_open_wrapper' ] );
-		add_action( 'jet-woo-builder/shortcodes/jet-woo-products/loop-end', [ $this, 'pglm_add_load_more_close_wrapper' ] );
-		add_filter( 'jet-woo-builder/jet-woo-products-grid/settings', [ $this, 'pglm_get_widget_settings' ], 999, 2 );
+	if ( ! $load_more ) {
+		return $attributes;
 	}
 
-	/**
-	 * Add open wrapper to widget with settings.
-	 */
-	public function pglm_add_load_more_open_wrapper() {
+	if ( $carousel_enabled ) {
+		return $attributes;
+	}
 
-		if ( ! $this->settings ) {
-			return;
-		}
+	$shortcode        = jet_woo_builder_shortcodes()->get_shortcode( 'jet-woo-products' );
+	$attrs            = [];
+	$default_settings = [];
 
-		$shortcode        = jet_woo_builder_shortcodes()->get_shortcode( 'jet-woo-products' );
-		$attributes       = [];
-		$settings         = $this->settings;
-		$store_settings   = $this->settings_to_store();
-		$default_settings = [];
+	if ( isset( $_REQUEST['action'] ) && 'jet_smart_filters' === $_REQUEST['action'] && isset( $_REQUEST['settings'] ) ) {
+		$default_settings = $_REQUEST['settings'];
+	}
 
-		foreach ( $store_settings as $key ) {
+	if ( isset( $_REQUEST['action'] ) && 'jet_woo_builder_load_more' === $_REQUEST['action'] && isset( $_REQUEST['settings'] ) ) {
+		$default_settings = $_REQUEST['settings'];
+	}
+
+	global $pglm_object, $stored_settings;
+
+	if ( $pglm_object ) {
+		foreach ( $stored_settings as $key ) {
 			if ( false !== strpos( $key, 'selected_' ) ) {
-				$default_settings[ $key ] = isset( $settings[ $key ] ) ? htmlspecialchars( $this->widget->__render_icon( str_replace( 'selected_', '', $key ), '%s', '', false ) ) : '';
+				$default_settings[ $key ] = isset( $settings[ $key ] ) ? htmlspecialchars( $pglm_object->__render_icon( str_replace( 'selected_', '', $key ), '%s', '', false ) ) : '';
 			} else {
 				$default_settings[ $key ] = isset( $settings[ $key ] ) ? $settings[ $key ] : '';
 			}
 		}
 
 		// Compatibility with compare and wishlist plugin.
-		$default_settings['_widget_id'] = $this->widget->get_id();
-
-		$shortcode->set_settings( $settings );
-
-		foreach ( $shortcode->get_atts() as $attr => $data ) {
-			$attr_val            = $settings[ $attr ];
-			$attr_val            = ! is_array( $attr_val ) ? $attr_val : implode( ',', $attr_val );
-			$attributes[ $attr ] = $attr_val;
-		}
-
-		echo sprintf( '<div class="pglm-settings-holder" data-load-more-settings="%s">', htmlspecialchars( json_encode( array_merge( $attributes, $default_settings ) ) ) );
-
+		$default_settings['_widget_id'] = $pglm_object->get_id();
 	}
 
-	/**
-	 * Add closing wrapper.
-	 */
-	public function pglm_add_load_more_close_wrapper() {
-
-		if ( ! $this->settings ) {
-			return;
-		}
-
-		echo '</div>';
-
+	foreach ( $shortcode->get_atts() as $attr => $data ) {
+		$attr_val       = $settings[ $attr ];
+		$attr_val       = ! is_array( $attr_val ) ? $attr_val : implode( ',', $attr_val );
+		$attrs[ $attr ] = $attr_val;
 	}
 
-	/**
-	 * Get settings from widget.
-	 *
-	 * @param $settings
-	 * @param $widget
-	 *
-	 * @return mixed
-	 */
-	public function pglm_get_widget_settings( $settings, $widget ) {
+	$attributes .= sprintf( ' data-load-more-settings="%s" ', htmlspecialchars( json_encode( array_merge( $default_settings, $attrs ) ) ) );
 
-		if ( ! $this->settings ) {
-			$this->settings = $settings;
-		}
+	return $attributes;
 
-		if ( ! $this->widget ) {
-			$this->widget = $widget;
-		}
+}
 
-		return $settings;
+/**
+ * Set global widget variable.
+ *
+ * @param $widget
+ */
+function pglm_store_default_widget_object( $widget ) {
 
+	if ( 'jet-woo-products' !== $widget->get_name() ) {
+		return;
 	}
 
-	/**
-	 * Returns settings to store list
-	 *
-	 * @return array
-	 */
-	public function settings_to_store() {
-		return [
-			'show_compare',
-			'compare_button_order',
-			'compare_button_order_tablet',
-			'compare_button_order_mobile',
-			'compare_button_icon_normal',
-			'selected_compare_button_icon_normal',
-			'compare_button_label_normal',
-			'compare_button_icon_added',
-			'selected_compare_button_icon_added',
-			'compare_button_label_added',
-			'compare_use_button_icon',
-			'compare_button_icon_position',
-			'compare_use_as_remove_button',
-			'show_wishlist',
-			'wishlist_button_order',
-			'wishlist_button_order_tablet',
-			'wishlist_button_order_mobile',
-			'wishlist_button_icon_normal',
-			'selected_wishlist_button_icon_normal',
-			'wishlist_button_label_normal',
-			'wishlist_button_icon_added',
-			'selected_wishlist_button_icon_added',
-			'wishlist_button_label_added',
-			'wishlist_use_button_icon',
-			'wishlist_button_icon_position',
-			'wishlist_use_as_remove_button',
-			'show_quickview',
-			'quickview_button_order',
-			'quickview_button_icon_normal',
-			'selected_quickview_button_icon_normal',
-			'quickview_button_label_normal',
-			'quickview_use_button_icon',
-			'quickview_button_icon_position',
-			'jet_woo_builder_qv',
-			'jet_woo_builder_qv_template',
-			'jet_woo_builder_cart_popup',
-			'jet_woo_builder_cart_popup_template',
-			'carousel_enabled',
-			'carousel_direction',
-			'prev_arrow',
-			'selected_prev_arrow',
-			'next_arrow',
-			'selected_next_arrow',
-			'enable_custom_query',
-			'custom_query_id',
-		];
+	global $pglm_object;
+
+	$settings  = $widget->get_settings();
+	$load_more = isset( $settings['enable_load_more'] ) ? filter_var( $settings['enable_load_more'], FILTER_VALIDATE_BOOLEAN ) : false;
+
+	if ( $load_more ) {
+		$pglm_object = $widget;
 	}
 
 }
 
+/**
+ * Set load more settings for JetSmartFilter and global variable.
+ *
+ * @param $list
+ *
+ * @return array
+ */
+function pglm_set_widget_setting_to_store( $list ) {
+
+	$custom_icon_settings = [
+		'enable_load_more',
+		'load_more_type',
+		'load_more_trigger_id',
+	];
+
+	global $stored_settings;
+
+	$stored_settings = array_merge( $list, $custom_icon_settings );
+
+	return $stored_settings;
+
+}

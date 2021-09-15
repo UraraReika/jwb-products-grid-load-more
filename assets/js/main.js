@@ -25,7 +25,7 @@
 
 					event.preventDefault();
 
-					let wrapper = $scope.find( '.pglm-settings-holder' ),
+					let wrapper = $scope.find( '.jet-woo-products' ),
 						$loadMoreSettings = $( wrapper ).data( 'load-more-settings' );
 
 					$.ajax( {
