@@ -41,7 +41,7 @@ if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 }
 
 // Set Custom widget data attributes.
-add_filter( 'jet-woo-builder/templates/jet-woo-products/widget-attributes', 'pglm_get_widget_attributes', 10, 2 );
+add_filter( 'jet-woo-builder/templates/jet-woo-products/widget-attributes', 'pglm_get_widget_attributes', 10, 3 );
 
 // Set JetSmartFilter settings to store.
 add_filter( 'jet-smart-filters/providers/jet-woo-products-grid/settings-list', 'pglm_set_widget_setting_to_store' );

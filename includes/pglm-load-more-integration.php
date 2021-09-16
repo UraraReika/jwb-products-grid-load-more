@@ -37,7 +37,9 @@ function pglm_get_widget_attributes( $attributes, $settings, $shortcode ) {
 		$pglm_query        = isset( $_REQUEST['query'] ) ? $_REQUEST['query'] : false;
 		$products_per_page = $_REQUEST['productsPerPage'];
 
-		$pglm_query['posts_per_page'] += $products_per_page;
+		if ( $pglm_query ) {
+			$pglm_query['posts_per_page'] += $products_per_page;
+		}
 	}
 
 	global $pglm_object, $pglm_stored_settings;
