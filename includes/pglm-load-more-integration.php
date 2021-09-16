@@ -8,7 +8,7 @@
  *
  * @return string
  */
-function pglm_get_widget_attributes( $attributes, $settings ) {
+function pglm_get_widget_attributes( $attributes, $settings, $shortcode ) {
 
 	$load_more        = isset( $settings['enable_load_more'] ) ? filter_var( $settings['enable_load_more'], FILTER_VALIDATE_BOOLEAN ) : false;
 	$carousel_enabled = isset( $settings['carousel_enabled'] ) ? filter_var( $settings['carousel_enabled'], FILTER_VALIDATE_BOOLEAN ) : false;
@@ -21,22 +21,29 @@ function pglm_get_widget_attributes( $attributes, $settings ) {
 		return $attributes;
 	}
 
-	$shortcode        = jet_woo_builder_shortcodes()->get_shortcode( 'jet-woo-products' );
-	$attrs            = [];
-	$default_settings = [];
+	$attrs             = [];
+	$default_settings  = [];
+	$pglm_query        = null;
+	$products_per_page = null;
 
 	if ( isset( $_REQUEST['action'] ) && 'jet_smart_filters' === $_REQUEST['action'] && isset( $_REQUEST['settings'] ) ) {
-		$default_settings = $_REQUEST['settings'];
+		$default_settings  = $_REQUEST['settings'];
+		$pglm_query        = jet_smart_filters()->query->get_query_args();
+		$products_per_page = $pglm_query['posts_per_page'];
 	}
 
 	if ( isset( $_REQUEST['action'] ) && 'jet_woo_builder_load_more' === $_REQUEST['action'] && isset( $_REQUEST['settings'] ) ) {
-		$default_settings = $_REQUEST['settings'];
+		$default_settings  = $_REQUEST['settings'];
+		$pglm_query        = isset( $_REQUEST['query'] ) ? $_REQUEST['query'] : false;
+		$products_per_page = $_REQUEST['productsPerPage'];
+
+		$pglm_query['posts_per_page'] += $products_per_page;
 	}
 
-	global $pglm_object, $stored_settings;
+	global $pglm_object, $pglm_stored_settings;
 
 	if ( $pglm_object ) {
-		foreach ( $stored_settings as $key ) {
+		foreach ( $pglm_stored_settings as $key ) {
 			if ( false !== strpos( $key, 'selected_' ) ) {
 				$default_settings[ $key ] = isset( $settings[ $key ] ) ? htmlspecialchars( $pglm_object->__render_icon( str_replace( 'selected_', '', $key ), '%s', '', false ) ) : '';
 			} else {
@@ -46,6 +53,7 @@ function pglm_get_widget_attributes( $attributes, $settings ) {
 
 		// Compatibility with compare and wishlist plugin.
 		$default_settings['_widget_id'] = $pglm_object->get_id();
+		$products_per_page              = $settings['number'];
 	}
 
 	foreach ( $shortcode->get_atts() as $attr => $data ) {
@@ -54,7 +62,12 @@ function pglm_get_widget_attributes( $attributes, $settings ) {
 		$attrs[ $attr ] = $attr_val;
 	}
 
-	$attributes .= sprintf( ' data-load-more-settings="%s" ', htmlspecialchars( json_encode( array_merge( $default_settings, $attrs ) ) ) );
+	$attributes .= sprintf(
+		' data-load-more-settings="%s" %s %s ',
+		htmlspecialchars( json_encode( array_merge( $default_settings, $attrs ) ) ),
+		! empty( $pglm_query ) ? 'data-load-more-query="' . htmlspecialchars( json_encode( $pglm_query ) ) . '"' : '',
+		! empty( $products_per_page ) ? 'data-product-per-page="' . $products_per_page . '"' : ''
+	);
 
 	return $attributes;
 
@@ -97,10 +110,10 @@ function pglm_set_widget_setting_to_store( $list ) {
 		'load_more_trigger_id',
 	];
 
-	global $stored_settings;
+	global $pglm_stored_settings;
 
-	$stored_settings = array_merge( $list, $custom_icon_settings );
+	$pglm_stored_settings = array_merge( $list, $custom_icon_settings );
 
-	return $stored_settings;
+	return $pglm_stored_settings;
 
 }

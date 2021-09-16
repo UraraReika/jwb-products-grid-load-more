@@ -26,7 +26,10 @@
 					event.preventDefault();
 
 					let wrapper = $scope.find( '.jet-woo-products' ),
-						$loadMoreSettings = $( wrapper ).data( 'load-more-settings' );
+						$loadMoreSettings = $( wrapper ).data( 'load-more-settings' ),
+						$loadMoreQuery = $( wrapper ).data( 'load-more-query' ),
+						$productsPerPage = $( wrapper ).data( 'product-per-page' );
+
 
 					$.ajax( {
 						type: 'POST',
@@ -34,7 +37,9 @@
 						dataType: 'json',
 						data: {
 							action: 'jet_woo_builder_load_more',
-							settings: $loadMoreSettings
+							settings: $loadMoreSettings,
+							query: $loadMoreQuery,
+							productsPerPage: $productsPerPage
 						},
 					} ).done( function( response ) {
 						let $html = $( response.data.html );
