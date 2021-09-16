@@ -2,6 +2,8 @@
 
 	"use strict";
 
+	let pageHolder = 1;
+
 	let JetWooBuilderPGLM = {
 
 		init: function () {
@@ -12,6 +14,10 @@
 			$.each( widgets, function( widget, callback ) {
 				elementorFrontend.hooks.addAction( 'frontend/element_ready/' + widget, callback );
 			});
+
+			$( document ).on( 'jet-filter-content-rendered', function() {
+				pageHolder = 1;
+			} )
 		},
 
 		productsGridLoadMore: function ( $scope ) {
@@ -32,9 +38,21 @@
 							let wrapper = $scope.find( '.jet-woo-products' ),
 								$loadMoreSettings = $( wrapper ).data( 'load-more-settings' ),
 								$loadMoreQuery = $( wrapper ).data( 'load-more-query' ),
-								$productsPerPage = $( wrapper ).data( 'product-per-page' );
+								productsPerPage = $( wrapper ).data( 'product-per-page' ),
+								productsPage = $( wrapper ).data( 'products-page' ),
+								productsPages = $( wrapper ).data( 'products-pages' );
 
-							JetWooBuilderPGLM.ajaxRequest( wrapper, $loadMoreSettings, $loadMoreQuery, $productsPerPage );
+							if ( productsPage === productsPages ) {
+								return;
+							}
+
+							$("html, body").animate({
+								scrollTop: $( wrapper ).outerHeight()
+							}, 1000);
+
+							productsPage++;
+
+							JetWooBuilderPGLM.ajaxRequest( wrapper, $loadMoreSettings, $loadMoreQuery, productsPerPage, productsPage, productsPages );
 
 						} );
 						break;
@@ -49,7 +67,13 @@
 									let wrapper = $scope.find( '.jet-woo-products' ),
 										$loadMoreSettings = $( wrapper ).data( 'load-more-settings' ),
 										$loadMoreQuery = $( wrapper ).data( 'load-more-query' ),
-										$productsPerPage = $( wrapper ).data( 'product-per-page' );
+										productsPerPage = $( wrapper ).data( 'product-per-page' ),
+										productsPage = $( wrapper ).data( 'products-page' ),
+										productsPages = $( wrapper ).data( 'products-pages' );
+
+									if ( productsPage === productsPages ) {
+										return;
+									}
 
 									if ( ! $( wrapper ).outerHeight() ) {
 										return;
@@ -59,7 +83,9 @@
 										return;
 									}
 
-									JetWooBuilderPGLM.ajaxRequest( wrapper, $loadMoreSettings, $loadMoreQuery, $productsPerPage );
+									productsPage++;
+
+									JetWooBuilderPGLM.ajaxRequest( wrapper, $loadMoreSettings, $loadMoreQuery, productsPerPage, productsPage, productsPages );
 
 								} ) );
 						}
@@ -90,7 +116,17 @@
 
 		},
 
-		ajaxRequest: function( wrapper, settings, query, number ) {
+		ajaxRequest: function( wrapper, settings, query, productsNumber, page, pages ) {
+			let skeleton = '<div class="jet-woo-products__item jet-woo-builder-product"><div class="jet-woo-products__inner-box"><div class="skeleton skeleton-image"></div><div class="skeleton-text-wrapper"><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div></div><div class="skeleton skeleton-btn"></div></div></div>';
+
+			if ( pageHolder < page ){
+				for ( let i = 0; i < productsNumber; i++ ) {
+					$( wrapper ).append( skeleton );
+				}
+			}
+
+			pageHolder = page;
+
 			$.ajax( {
 				type: 'POST',
 				url: window.jetWooBuilderData.ajax_url,
@@ -99,7 +135,9 @@
 					action: 'jet_woo_builder_load_more',
 					settings: settings,
 					query: query,
-					productsPerPage: number
+					productsPerPage: productsNumber,
+					page: page,
+					pages: pages
 				},
 			} ).done( function( response ) {
 				let $html = $( response.data.html );

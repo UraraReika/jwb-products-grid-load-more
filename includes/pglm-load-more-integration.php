@@ -5,10 +5,11 @@
  *
  * @param $attributes
  * @param $settings
+ * @param $shortcode
  *
  * @return string
  */
-function pglm_get_widget_attributes( $attributes, $settings, $shortcode ) {
+function pglm_get_widget_attributes( $attributes, $settings, $query, $shortcode ) {
 
 	$load_more        = isset( $settings['enable_load_more'] ) ? filter_var( $settings['enable_load_more'], FILTER_VALIDATE_BOOLEAN ) : false;
 	$carousel_enabled = isset( $settings['carousel_enabled'] ) ? filter_var( $settings['carousel_enabled'], FILTER_VALIDATE_BOOLEAN ) : false;
@@ -25,10 +26,15 @@ function pglm_get_widget_attributes( $attributes, $settings, $shortcode ) {
 	$default_settings  = [];
 	$pglm_query        = null;
 	$products_per_page = null;
+	$products_page     = $query->get( 'paged' ) ? $query->get( 'paged' ) : 1;
+	$products_pages    = $query->max_num_pages;
 
 	if ( isset( $_REQUEST['action'] ) && 'jet_smart_filters' === $_REQUEST['action'] && isset( $_REQUEST['settings'] ) ) {
 		$default_settings  = $_REQUEST['settings'];
 		$pglm_query        = jet_smart_filters()->query->get_query_args();
+		$query_test        = new \WP_Query( $pglm_query );
+		$products_page     = 1;
+		$products_pages    = $query_test->max_num_pages;
 		$products_per_page = $pglm_query['posts_per_page'];
 	}
 
@@ -36,6 +42,8 @@ function pglm_get_widget_attributes( $attributes, $settings, $shortcode ) {
 		$default_settings  = $_REQUEST['settings'];
 		$pglm_query        = isset( $_REQUEST['query'] ) ? $_REQUEST['query'] : false;
 		$products_per_page = $_REQUEST['productsPerPage'];
+		$products_page     = $_REQUEST['page'];
+		$products_pages    = $_REQUEST['pages'];
 
 		if ( $pglm_query ) {
 			$pglm_query['posts_per_page'] += $products_per_page;
@@ -55,7 +63,8 @@ function pglm_get_widget_attributes( $attributes, $settings, $shortcode ) {
 
 		// Compatibility with compare and wishlist plugin.
 		$default_settings['_widget_id'] = $pglm_object->get_id();
-		$products_per_page              = $settings['number'];
+
+		$products_per_page = $settings['number'];
 	}
 
 	foreach ( $shortcode->get_atts() as $attr => $data ) {
@@ -65,10 +74,12 @@ function pglm_get_widget_attributes( $attributes, $settings, $shortcode ) {
 	}
 
 	$attributes .= sprintf(
-		' data-load-more-settings="%s" %s %s ',
+		' data-load-more-settings="%s" %s data-product-per-page="%s" data-products-page="%s"  data-products-pages="%s" ',
 		htmlspecialchars( json_encode( array_merge( $default_settings, $attrs ) ) ),
 		! empty( $pglm_query ) ? 'data-load-more-query="' . htmlspecialchars( json_encode( $pglm_query ) ) . '"' : '',
-		! empty( $products_per_page ) ? 'data-product-per-page="' . $products_per_page . '"' : ''
+		$products_per_page,
+		$products_page,
+		$products_pages
 	);
 
 	return $attributes;

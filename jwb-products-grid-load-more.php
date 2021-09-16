@@ -27,6 +27,7 @@ include( 'includes/pglm-load-more-integration.php' );
 
 // Enqueue styles and scripts.
 add_action( 'elementor/frontend/before_enqueue_scripts', 'pglm_enqueue_scripts' );
+add_action( 'wp_enqueue_scripts', 'pglm_enqueue_styles' );
 
 // Register controls in widgets.
 add_action( 'elementor/element/jet-woo-products/section_general/after_section_end', 'pglm_register_load_more_controls', 999 );
@@ -41,7 +42,7 @@ if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 }
 
 // Set Custom widget data attributes.
-add_filter( 'jet-woo-builder/templates/jet-woo-products/widget-attributes', 'pglm_get_widget_attributes', 10, 3 );
+add_filter( 'jet-woo-builder/templates/jet-woo-products/widget-attributes', 'pglm_get_widget_attributes', 10, 4 );
 
 // Set JetSmartFilter settings to store.
 add_filter( 'jet-smart-filters/providers/jet-woo-products-grid/settings-list', 'pglm_set_widget_setting_to_store' );
