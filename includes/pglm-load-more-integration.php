@@ -24,7 +24,8 @@ function pglm_get_widget_attributes( $attributes, $settings, $query, $shortcode 
 
 	$attrs             = [];
 	$default_settings  = [];
-	$pglm_query        = null;
+	$jsf_query         = jet_smart_filters()->query->get_query_args();
+	$pglm_query        = $jsf_query ? $jsf_query : null;
 	$products_per_page = null;
 	$products_page     = $query->get( 'paged' ) ? $query->get( 'paged' ) : 1;
 	$products_pages    = $query->max_num_pages;
@@ -32,9 +33,9 @@ function pglm_get_widget_attributes( $attributes, $settings, $query, $shortcode 
 	if ( isset( $_REQUEST['action'] ) && 'jet_smart_filters' === $_REQUEST['action'] && isset( $_REQUEST['settings'] ) ) {
 		$default_settings  = $_REQUEST['settings'];
 		$pglm_query        = jet_smart_filters()->query->get_query_args();
-		$query_test        = new \WP_Query( $pglm_query );
+		$request_query     = new \WP_Query( $pglm_query );
 		$products_page     = 1;
-		$products_pages    = $query_test->max_num_pages;
+		$products_pages    = $request_query->max_num_pages;
 		$products_per_page = $pglm_query['posts_per_page'];
 	}
 
@@ -46,7 +47,11 @@ function pglm_get_widget_attributes( $attributes, $settings, $query, $shortcode 
 		$products_pages    = $_REQUEST['pages'];
 
 		if ( $pglm_query ) {
-			$pglm_query['posts_per_page'] += $products_per_page;
+			if ( isset( $pglm_query['posts_per_page'] ) ) {
+				$pglm_query['posts_per_page'] += $products_per_page;
+			} else {
+				$pglm_query['posts_per_page'] = $settings['number'] + $products_per_page;
+			}
 		}
 	}
 
