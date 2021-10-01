@@ -46,3 +46,6 @@ add_filter( 'jet-woo-builder/templates/jet-woo-products/widget-attributes', 'pgl
 
 // Set JetSmartFilter settings to store.
 add_filter( 'jet-smart-filters/providers/jet-woo-products-grid/settings-list', 'pglm_set_widget_setting_to_store' );
+
+// Trigger widget for loader.
+add_filter( 'jet-woo-builder/shortcodes/jet-woo-products/query-args', 'pglm_trigger', 10, 2 );

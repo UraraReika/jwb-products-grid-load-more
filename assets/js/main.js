@@ -143,6 +143,8 @@
 				let $html = $( response.data.html );
 
 				$( wrapper ).parent().html( $html );
+
+				$( document ).trigger('jet-load-more-content-rendered', [ $html ] );
 			} );
 		}
 	};

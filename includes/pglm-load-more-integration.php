@@ -24,9 +24,9 @@ function pglm_get_widget_attributes( $attributes, $settings, $query, $shortcode 
 
 	$attrs             = [];
 	$default_settings  = [];
-	$jsf_query         = jet_smart_filters()->query->get_query_args();
+	$jsf_query         = function_exists( 'jet_smart_filters' ) ? jet_smart_filters()->query->get_query_args() : false;
 	$pglm_query        = $jsf_query ? $jsf_query : null;
-	$products_per_page = null;
+	$products_per_page = isset( $settings['number'] ) ? $settings['number'] : null;
 	$products_page     = $query->get( 'paged' ) ? $query->get( 'paged' ) : 1;
 	$products_pages    = $query->max_num_pages;
 
@@ -57,6 +57,10 @@ function pglm_get_widget_attributes( $attributes, $settings, $query, $shortcode 
 
 	global $pglm_object, $pglm_stored_settings;
 
+	if ( ! $pglm_stored_settings ) {
+		$pglm_stored_settings = pglm_settings_to_store();
+	}
+
 	if ( $pglm_object ) {
 		foreach ( $pglm_stored_settings as $key ) {
 			if ( false !== strpos( $key, 'selected_' ) ) {
@@ -68,8 +72,6 @@ function pglm_get_widget_attributes( $attributes, $settings, $query, $shortcode 
 
 		// Compatibility with compare and wishlist plugin.
 		$default_settings['_widget_id'] = $pglm_object->get_id();
-
-		$products_per_page = $settings['number'];
 	}
 
 	foreach ( $shortcode->get_atts() as $attr => $data ) {
@@ -133,5 +135,85 @@ function pglm_set_widget_setting_to_store( $list ) {
 	$pglm_stored_settings = array_merge( $list, $custom_icon_settings );
 
 	return $pglm_stored_settings;
+
+}
+
+/**
+ * Returns settings to store list.
+ *
+ * @return array
+ */
+function pglm_settings_to_store() {
+	return apply_filters( 'jet-woo-builder/products-grid/load-more/settings-list', [
+		'show_compare',
+		'compare_button_order',
+		'compare_button_order_tablet',
+		'compare_button_order_mobile',
+		'compare_button_icon_normal',
+		'selected_compare_button_icon_normal',
+		'compare_button_label_normal',
+		'compare_button_icon_added',
+		'selected_compare_button_icon_added',
+		'compare_button_label_added',
+		'compare_use_button_icon',
+		'compare_button_icon_position',
+		'compare_use_as_remove_button',
+		'show_wishlist',
+		'wishlist_button_order',
+		'wishlist_button_order_tablet',
+		'wishlist_button_order_mobile',
+		'wishlist_button_icon_normal',
+		'selected_wishlist_button_icon_normal',
+		'wishlist_button_label_normal',
+		'wishlist_button_icon_added',
+		'selected_wishlist_button_icon_added',
+		'wishlist_button_label_added',
+		'wishlist_use_button_icon',
+		'wishlist_button_icon_position',
+		'wishlist_use_as_remove_button',
+		'show_quickview',
+		'quickview_button_order',
+		'quickview_button_icon_normal',
+		'selected_quickview_button_icon_normal',
+		'quickview_button_label_normal',
+		'quickview_use_button_icon',
+		'quickview_button_icon_position',
+		'jet_woo_builder_qv',
+		'jet_woo_builder_qv_template',
+		'jet_woo_builder_cart_popup',
+		'jet_woo_builder_cart_popup_template',
+		'carousel_enabled',
+		'carousel_direction',
+		'prev_arrow',
+		'selected_prev_arrow',
+		'next_arrow',
+		'selected_next_arrow',
+		'enable_custom_query',
+		'custom_query_id',
+		'enable_load_more',
+		'load_more_type',
+		'load_more_trigger_id',
+	] );
+}
+
+/**
+ * Trigger widget for loader.
+ *
+ * @param $args
+ * @param $shortcode
+ *
+ * @return mixed
+ */
+function pglm_trigger( $args, $shortcode ) {
+
+	$query_id = $shortcode->get_attr( '_element_id' );
+
+	if ( ! $query_id ) {
+		$query_id = 'default';
+	}
+
+	$args['no_found_rows']     = false;
+
+	return $args;
 
 }
