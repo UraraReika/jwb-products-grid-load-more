@@ -9,15 +9,14 @@
  * Text Domain: jet-woo-builder
  * License:     GPL-3.0+
  * License URI: http://www.gnu.org/licenses/gpl-3.0.txt
- * Domain Path: /languages
  */
-
-define( 'PGLM_PLUGIN_URL', __FILE__ );
 
 if ( ! function_exists( 'add_action' ) ) {
 	echo 'Hi there! I\'m just a plugin!';
-	exit;
+	exit; // If this file is called directly, abort.
 }
+
+define( 'PGLM_PLUGIN_URL', __FILE__ );
 
 // Includes
 include( 'includes/pglm-enqueue.php' );
@@ -29,7 +28,7 @@ include( 'includes/pglm-load-more-integration.php' );
 add_action( 'elementor/frontend/before_enqueue_scripts', 'pglm_enqueue_scripts' );
 add_action( 'wp_enqueue_scripts', 'pglm_enqueue_styles' );
 
-// Register controls in widgets.
+// Register controls in widget.
 add_action( 'elementor/element/jet-woo-products/section_general/after_section_end', 'pglm_register_load_more_controls', 999 );
 
 // Set default widget object.

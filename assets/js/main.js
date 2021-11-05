@@ -102,9 +102,13 @@
 			let timeout;
 
 			return function debounced( $event ) {
+
 				function delayed() {
+
 					callback.call( this, $event );
+
 					timeout = null;
+
 				}
 
 				if ( timeout ) {
@@ -112,11 +116,13 @@
 				}
 
 				timeout = setTimeout( delayed, threshold );
+
 			};
 
 		},
 
 		ajaxRequest: function( wrapper, settings, query, productsNumber, page, pages ) {
+
 			let skeleton = '<div class="jet-woo-products__item jet-woo-builder-product"><div class="jet-woo-products__inner-box"><div class="skeleton skeleton-image"></div><div class="skeleton-text-wrapper"><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div></div><div class="skeleton skeleton-btn"></div></div></div>';
 
 			if ( pageHolder < page ){
@@ -146,7 +152,9 @@
 
 				$( document ).trigger('jet-load-more-content-rendered', [ $html ] );
 			} );
+
 		}
+
 	};
 
 	$( window ).on( 'elementor/frontend/init', JetWooBuilderPGLM.init );

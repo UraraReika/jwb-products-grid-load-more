@@ -1,38 +1,65 @@
 <?php
 
 /**
+ * Load more attributes.
+ *
  * Set custom load more functionality attributes for Products Grid widget.
  *
- * @param $attributes
- * @param $settings
- * @param $shortcode
+ * @since 1.0.0
  *
- * @return string
+ * @param string $attributes
+ * @param array  $settings
+ * @param object $query
+ * @param object $shortcode
+ *
+ * @return string Custom attributes for proper functionality.
  */
-function pglm_get_widget_attributes( $attributes, $settings, $query, $shortcode ) {
+function pglm_get_widget_attributes( string $attributes, array $settings, $query, $shortcode ) {
 
 	$load_more        = isset( $settings['enable_load_more'] ) ? filter_var( $settings['enable_load_more'], FILTER_VALIDATE_BOOLEAN ) : false;
 	$carousel_enabled = isset( $settings['carousel_enabled'] ) ? filter_var( $settings['carousel_enabled'], FILTER_VALIDATE_BOOLEAN ) : false;
 
-	if ( ! $load_more ) {
-		return $attributes;
-	}
-
-	if ( $carousel_enabled ) {
+	if ( ! $load_more || $carousel_enabled ) {
 		return $attributes;
 	}
 
 	$attrs             = [];
 	$default_settings  = [];
 	$jsf_query         = function_exists( 'jet_smart_filters' ) ? jet_smart_filters()->query->get_query_args() : false;
-	$pglm_query        = $jsf_query ? $jsf_query : null;
+	$pglm_query        = $query->query;
 	$products_per_page = isset( $settings['number'] ) ? $settings['number'] : null;
 	$products_page     = $query->get( 'paged' ) ? $query->get( 'paged' ) : 1;
 	$products_pages    = $query->max_num_pages;
 
+	if ( 'yes' === $query->get( 'jet_use_current_query' ) && $query->get( 'wc_query' ) ) {
+
+		$default_query = array(
+			'post_type'         => $query->get( 'post_type' ),
+			'wc_query'          => $query->get( 'wc_query' ),
+			'tax_query'         => $query->get( 'tax_query' ),
+			'orderby'           => $query->get( 'orderby' ),
+			'order'             => $query->get( 'order' ),
+			'paged'             => $query->get( 'paged' ),
+			'posts_per_page'    => $query->get( 'posts_per_page' ),
+			'jet_smart_filters' => 'jet-woo-products-grid/' . $shortcode->get_attr( 'query_id' ),
+		);
+
+		if ( $query->get( 'taxonomy' ) ) {
+			$default_query['taxonomy'] = $query->get( 'taxonomy' );
+			$default_query['term']     = $query->get( 'term' );
+		}
+
+		if ( is_search() ) {
+			$default_query['s'] = $query->get( 's' );
+		}
+
+		$query->set( 'jet_smart_filters', 'jet-woo-products-grid/' . $shortcode->get_attr( 'query_id' ) );
+
+	}
+
 	if ( isset( $_REQUEST['action'] ) && 'jet_smart_filters' === $_REQUEST['action'] && isset( $_REQUEST['settings'] ) ) {
 		$default_settings  = $_REQUEST['settings'];
-		$pglm_query        = jet_smart_filters()->query->get_query_args();
+		$pglm_query        = $jsf_query;
 		$request_query     = new \WP_Query( $pglm_query );
 		$products_page     = 1;
 		$products_pages    = $request_query->max_num_pages;
@@ -81,9 +108,9 @@ function pglm_get_widget_attributes( $attributes, $settings, $query, $shortcode 
 	}
 
 	$attributes .= sprintf(
-		' data-load-more-settings="%s" %s data-product-per-page="%s" data-products-page="%s"  data-products-pages="%s" ',
+		' data-load-more-settings="%s" data-load-more-query="%s" data-product-per-page="%s" data-products-page="%s"  data-products-pages="%s" ',
 		htmlspecialchars( json_encode( array_merge( $default_settings, $attrs ) ) ),
-		! empty( $pglm_query ) ? 'data-load-more-query="' . htmlspecialchars( json_encode( $pglm_query ) ) . '"' : '',
+		htmlspecialchars( json_encode( $pglm_query ) ),
 		$products_per_page,
 		$products_page,
 		$products_pages
@@ -96,7 +123,11 @@ function pglm_get_widget_attributes( $attributes, $settings, $query, $shortcode 
 /**
  * Set global widget variable.
  *
- * @param $widget
+ * @since 1.0.0
+ *
+ * @param object $widget
+ *
+ * @return void
  */
 function pglm_store_default_widget_object( $widget ) {
 
@@ -116,13 +147,17 @@ function pglm_store_default_widget_object( $widget ) {
 }
 
 /**
+ * Filter settings to store.
+ *
  * Set load more settings for JetSmartFilter and global variable.
  *
- * @param $list
+ * @since 1.0.0
  *
- * @return array
+ * @param array $list
+ *
+ * @return array List of settings.
  */
-function pglm_set_widget_setting_to_store( $list ) {
+function pglm_set_widget_setting_to_store( array $list ) {
 
 	$custom_icon_settings = [
 		'enable_load_more',
@@ -139,9 +174,13 @@ function pglm_set_widget_setting_to_store( $list ) {
 }
 
 /**
- * Returns settings to store list.
+ * Settings to store.
  *
- * @return array
+ * Returns widget stored settings that used after ajax request.
+ *
+ * @since 1.0.0
+ *
+ * @return array List of settings.
  */
 function pglm_settings_to_store() {
 	return apply_filters( 'jet-woo-builder/products-grid/load-more/settings-list', [
@@ -199,8 +238,10 @@ function pglm_settings_to_store() {
 /**
  * Trigger widget for loader.
  *
- * @param $args
- * @param $shortcode
+ * @since 1.0.0
+ *
+ * @param array  $args
+ * @param object $shortcode
  *
  * @return mixed
  */
@@ -212,7 +253,7 @@ function pglm_trigger( $args, $shortcode ) {
 		$query_id = 'default';
 	}
 
-	$args['no_found_rows']     = false;
+	$args['no_found_rows'] = false;
 
 	return $args;
 
