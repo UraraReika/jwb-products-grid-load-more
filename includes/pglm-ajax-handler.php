@@ -10,7 +10,13 @@ function pglm_load_more_products() {
 	$query             = isset( $_POST['query'] ) ? $_POST['query'] : false;
 
 	if ( $query ) {
-		add_filter( 'pre_get_posts', 'add_query_args', 10 );
+		add_filter( 'pre_get_posts', 'add_query_args', 10, 1 );
+
+		if ( isset( $settings['use_current_query'] ) && 'yes' === $settings['use_current_query'] ) {
+			global $wp_query;
+
+			$wp_query = new \WP_Query( $query );
+		}
 	} else {
 		$settings['number'] += $products_per_page;
 	}

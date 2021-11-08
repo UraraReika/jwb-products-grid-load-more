@@ -1,6 +1,42 @@
 <?php
 
 /**
+ * Default query.
+ *
+ * Store default query args.
+ *
+ * @since 1.1.0
+ *
+ * @param $query
+ *
+ * @return array
+ */
+function get_default_query( $query ):array {
+
+	$default_query = [
+		'post_type'      => $query->get( 'post_type' ),
+		'wc_query'       => $query->get( 'wc_query' ),
+		'tax_query'      => $query->get( 'tax_query' ),
+		'orderby'        => $query->get( 'orderby' ),
+		'order'          => $query->get( 'order' ),
+		'paged'          => $query->get( 'paged' ),
+		'posts_per_page' => $query->get( 'posts_per_page' ),
+	];
+
+	if ( $query->get( 'taxonomy' ) ) {
+		$default_query['taxonomy'] = $query->get( 'taxonomy' );
+		$default_query['term']     = $query->get( 'term' );
+	}
+
+	if ( is_search() ) {
+		$default_query['s'] = $query->get( 's' );
+	}
+
+	return $default_query;
+
+}
+
+/**
  * Load more attributes.
  *
  * Set custom load more functionality attributes for Products Grid widget.
@@ -14,7 +50,7 @@
  *
  * @return string Custom attributes for proper functionality.
  */
-function pglm_get_widget_attributes( string $attributes, array $settings, $query, $shortcode ) {
+function pglm_get_widget_attributes( string $attributes, array $settings, $query, $shortcode ):string {
 
 	$load_more        = isset( $settings['enable_load_more'] ) ? filter_var( $settings['enable_load_more'], FILTER_VALIDATE_BOOLEAN ) : false;
 	$carousel_enabled = isset( $settings['carousel_enabled'] ) ? filter_var( $settings['carousel_enabled'], FILTER_VALIDATE_BOOLEAN ) : false;
@@ -26,44 +62,21 @@ function pglm_get_widget_attributes( string $attributes, array $settings, $query
 	$attrs             = [];
 	$default_settings  = [];
 	$jsf_query         = function_exists( 'jet_smart_filters' ) ? jet_smart_filters()->query->get_query_args() : false;
-	$pglm_query        = $query->query;
-	$products_per_page = isset( $settings['number'] ) ? $settings['number'] : null;
+	$pglm_query        = $jsf_query ? $jsf_query : null;
+	$products_per_page = intval( $settings['number'] );
 	$products_page     = $query->get( 'paged' ) ? $query->get( 'paged' ) : 1;
 	$products_pages    = $query->max_num_pages;
 
-	if ( 'yes' === $query->get( 'jet_use_current_query' ) && $query->get( 'wc_query' ) ) {
-
-		$default_query = array(
-			'post_type'         => $query->get( 'post_type' ),
-			'wc_query'          => $query->get( 'wc_query' ),
-			'tax_query'         => $query->get( 'tax_query' ),
-			'orderby'           => $query->get( 'orderby' ),
-			'order'             => $query->get( 'order' ),
-			'paged'             => $query->get( 'paged' ),
-			'posts_per_page'    => $query->get( 'posts_per_page' ),
-			'jet_smart_filters' => 'jet-woo-products-grid/' . $shortcode->get_attr( 'query_id' ),
-		);
-
-		if ( $query->get( 'taxonomy' ) ) {
-			$default_query['taxonomy'] = $query->get( 'taxonomy' );
-			$default_query['term']     = $query->get( 'term' );
-		}
-
-		if ( is_search() ) {
-			$default_query['s'] = $query->get( 's' );
-		}
-
-		$query->set( 'jet_smart_filters', 'jet-woo-products-grid/' . $shortcode->get_attr( 'query_id' ) );
-
+	if ( isset( $settings['use_current_query'] ) && 'yes' === $settings['use_current_query'] ) {
+		$pglm_query = get_default_query( $query );
 	}
 
 	if ( isset( $_REQUEST['action'] ) && 'jet_smart_filters' === $_REQUEST['action'] && isset( $_REQUEST['settings'] ) ) {
-		$default_settings  = $_REQUEST['settings'];
-		$pglm_query        = $jsf_query;
-		$request_query     = new \WP_Query( $pglm_query );
-		$products_page     = 1;
-		$products_pages    = $request_query->max_num_pages;
-		$products_per_page = $pglm_query['posts_per_page'];
+		$default_settings = $_REQUEST['settings'];
+		$pglm_query       = $jsf_query;
+		$request_query    = new \WP_Query( array_merge( $query->query_vars, $pglm_query ) );
+		$products_page    = 1;
+		$products_pages   = $request_query->max_num_pages;
 	}
 
 	if ( isset( $_REQUEST['action'] ) && 'jet_woo_builder_load_more' === $_REQUEST['action'] && isset( $_REQUEST['settings'] ) ) {
@@ -108,9 +121,9 @@ function pglm_get_widget_attributes( string $attributes, array $settings, $query
 	}
 
 	$attributes .= sprintf(
-		' data-load-more-settings="%s" data-load-more-query="%s" data-product-per-page="%s" data-products-page="%s"  data-products-pages="%s" ',
+		' data-load-more-settings="%s" %s data-product-per-page="%s" data-products-page="%s"  data-products-pages="%s" ',
 		htmlspecialchars( json_encode( array_merge( $default_settings, $attrs ) ) ),
-		htmlspecialchars( json_encode( $pglm_query ) ),
+		! empty( $pglm_query ) ? 'data-load-more-query="' . htmlspecialchars( json_encode( $pglm_query ) ) . '"' : '',
 		$products_per_page,
 		$products_page,
 		$products_pages
