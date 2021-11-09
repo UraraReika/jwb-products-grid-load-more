@@ -123,7 +123,19 @@
 
 		ajaxRequest: function( wrapper, settings, query, productsNumber, page, pages ) {
 
-			let skeleton = '<div class="jet-woo-products__item jet-woo-builder-product"><div class="jet-woo-products__inner-box"><div class="skeleton skeleton-image"></div><div class="skeleton-text-wrapper"><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div></div><div class="skeleton skeleton-btn"></div></div></div>';
+			let skeleton = `<div class="jet-woo-products__item jet-woo-builder-product">
+								<div class="jet-woo-products__inner-box">
+									<div class="skeleton skeleton-image"></div>
+									<div class="skeleton skeleton-title"></div>
+									<div class="skeleton skeleton-price"></div>
+									<div class="skeleton-text-wrapper">
+										<div class="skeleton skeleton-text"></div>
+										<div class="skeleton skeleton-text"></div>
+										<div class="skeleton skeleton-text"></div>
+									</div>
+									<div class="skeleton skeleton-btn"></div>
+								</div>
+							</div>`;
 
 			if ( pageHolder < page ){
 				for ( let i = 0; i < productsNumber; i++ ) {

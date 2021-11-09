@@ -10,6 +10,20 @@
 	border-radius: 5px;
 }
 
+.skeleton-title {
+	width: 90%;
+	height: 15px;
+	border-radius: 3px;
+	margin: 0 auto 5px;
+}
+
+.skeleton-price {
+	width: 20%;
+	height: 15px;
+	border-radius: 3px;
+	margin: 0 auto 10px;
+}
+
 .skeleton-text-wrapper {
 	margin-bottom: 20px;
 }
@@ -21,16 +35,16 @@
 	border-radius: 3px;
 }
 
+.skeleton-text:last-child {
+	margin-bottom: 0;
+	width: 80%;
+}
+
 .skeleton-btn {
 	width: 70%;
 	height: 40px;
 	margin: 0 auto;
 	border-radius: 15px;
-}
-
-.skeleton-text:last-child {
-	margin-bottom: 0;
-	width: 80%;
 }
 
 @keyframes skeleton-loading {
