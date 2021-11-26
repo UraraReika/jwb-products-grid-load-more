@@ -25,7 +25,13 @@
 			let $widgetSettings = $scope.data( 'settings' );
 
 			if ( $widgetSettings && $widgetSettings.enable_load_more ) {
-				let loadMoreType = $widgetSettings.load_more_type;
+				let loadMoreType = $widgetSettings.load_more_type,
+					wrapper = $scope.find( '.jet-woo-products' ),
+					$loadMoreSettings = $( wrapper ).data( 'load-more-settings' ),
+					$loadMoreQuery = $( wrapper ).data( 'load-more-query' ),
+					productsPerPage = $( wrapper ).data( 'product-per-page' ),
+					productsPage = parseInt( $( wrapper ).data( 'products-page' ), 10 ) || 0,
+					productsPages = parseInt( $( wrapper ).data( 'products-pages' ), 10 ) || 0;
 
 				switch ( loadMoreType ) {
 					case 'click':
@@ -34,13 +40,6 @@
 						$( document ).on( 'click', triggerId, function ( event ) {
 
 							event.preventDefault();
-
-							let wrapper = $scope.find( '.jet-woo-products' ),
-								$loadMoreSettings = $( wrapper ).data( 'load-more-settings' ),
-								$loadMoreQuery = $( wrapper ).data( 'load-more-query' ),
-								productsPerPage = $( wrapper ).data( 'product-per-page' ),
-								productsPage = $( wrapper ).data( 'products-page' ),
-								productsPages = $( wrapper ).data( 'products-pages' );
 
 							if ( productsPage === productsPages ) {
 								return;
@@ -52,7 +51,7 @@
 
 							productsPage++;
 
-							JetWooBuilderPGLM.ajaxRequest( wrapper, $loadMoreSettings, $loadMoreQuery, productsPerPage, productsPage, productsPages );
+							JetWooBuilderPGLM.ajaxRequest( wrapper, $loadMoreSettings, $loadMoreQuery, productsPerPage, productsPage, productsPages, triggerId );
 
 						} );
 						break;
@@ -63,13 +62,6 @@
 							$( window )
 								.off( 'scroll.JetWooBuilderInfinityScroll/' + widgetID )
 								.on( 'scroll.JetWooBuilderInfinityScroll/' + widgetID, JetWooBuilderPGLM.debounce( 250, function () {
-
-									let wrapper = $scope.find( '.jet-woo-products' ),
-										$loadMoreSettings = $( wrapper ).data( 'load-more-settings' ),
-										$loadMoreQuery = $( wrapper ).data( 'load-more-query' ),
-										productsPerPage = $( wrapper ).data( 'product-per-page' ),
-										productsPage = $( wrapper ).data( 'products-page' ),
-										productsPages = $( wrapper ).data( 'products-pages' );
 
 									if ( productsPage === productsPages ) {
 										return;
@@ -121,7 +113,15 @@
 
 		},
 
-		ajaxRequest: function( wrapper, settings, query, productsNumber, page, pages ) {
+		ajaxRequest: function( wrapper, settings, query, productsNumber, page, pages, triggerButton ) {
+
+			if ( $( triggerButton ).length ) {
+				if ( page === pages && ! window.elementor ) {
+					$( triggerButton ).css( 'display', 'none' );
+				} else {
+					$( triggerButton ).removeAttr( 'style' );
+				}
+			}
 
 			let skeleton = `<div class="jet-woo-products__item jet-woo-builder-product">
 								<div class="jet-woo-products__inner-box">
