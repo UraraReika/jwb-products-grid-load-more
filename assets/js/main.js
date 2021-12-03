@@ -15,7 +15,9 @@
 				elementorFrontend.hooks.addAction( 'frontend/element_ready/' + widget, callback );
 			});
 
-			$( document ).on( 'jet-filter-content-rendered', function() {
+			$( document ).on( 'jet-filter-content-rendered', function( event, $scope ) {
+				JetWooBuilderPGLM.productsGridLoadMore( $scope.closest( '.elementor-element' ) );
+
 				pageHolder = 1;
 			} )
 		},
@@ -29,7 +31,16 @@
 
 				switch ( loadMoreType ) {
 					case 'click':
-						let triggerId = '#' + $widgetSettings.load_more_trigger_id;
+						let triggerId = '#' + $widgetSettings.load_more_trigger_id,
+							grid = $scope.find( '.jet-woo-products' ),
+							page = $( grid ).data( 'products-page' ),
+							pages = $( grid ).data( 'products-pages' );
+
+						if ( page === pages ) {
+							$( triggerId ).css( 'display', 'none' );
+						} else {
+							$( triggerId ).removeAttr( 'style' );
+						}
 
 						$( document ).on( 'click', triggerId, function ( event ) {
 
