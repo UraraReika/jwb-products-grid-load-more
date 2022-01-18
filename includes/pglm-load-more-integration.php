@@ -75,7 +75,7 @@ function pglm_get_widget_attributes( string $attributes, array $settings, $query
 		$default_settings = $_REQUEST['settings'];
 		$pglm_query       = $jsf_query;
 		$request_query    = new \WP_Query( array_merge( $query->query_vars, $pglm_query ) );
-		$products_page    = 1;
+		$products_page    = $request_query->query_vars['paged'] ? $request_query->query_vars['paged'] : 1;
 		$products_pages   = $request_query->max_num_pages;
 	}
 

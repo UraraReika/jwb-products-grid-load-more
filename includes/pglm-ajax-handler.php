@@ -60,4 +60,9 @@ function add_query_args( $query ) {
 
 	$query->set( 'posts_per_page', $posts_per_page );
 
+	if ( $query->get( 'paged' ) ) {
+		$query->set( 'offset', ( $query->get( 'paged' ) - 1 ) * $pglm_products_per_page );
+		$query->set( 'paged', 1 );
+	}
+
 }

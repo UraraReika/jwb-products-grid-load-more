@@ -10,18 +10,22 @@
 	border-radius: 5px;
 }
 
+.skeleton-content-wrapper {
+	padding: 15px;
+}
+
 .skeleton-title {
 	width: 90%;
 	height: 15px;
 	border-radius: 3px;
-	margin: 0 auto 5px;
+	margin-bottom: 5px;
 }
 
 .skeleton-price {
 	width: 20%;
 	height: 15px;
 	border-radius: 3px;
-	margin: 0 auto 10px;
+	margin-bottom: 10px;
 }
 
 .skeleton-text-wrapper {
