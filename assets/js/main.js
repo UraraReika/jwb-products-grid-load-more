@@ -58,7 +58,7 @@
 							}
 
 							$( 'html, body' ).animate( {
-								scrollTop: $( wrapper ).outerHeight()
+								scrollTop: $( wrapper ).outerHeight() + $( wrapper ).offset().top
 							}, 1000 );
 
 							productsPage++;
