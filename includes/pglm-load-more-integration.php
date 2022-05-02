@@ -115,6 +115,10 @@ function pglm_get_widget_attributes( string $attributes, array $settings, $query
 	}
 
 	foreach ( $shortcode->get_atts() as $attr => $data ) {
+		if ( 'enable_thumb_effect' === $attr ) {
+			continue;
+		}
+
 		$attr_val       = $settings[ $attr ];
 		$attr_val       = ! is_array( $attr_val ) ? $attr_val : implode( ',', $attr_val );
 		$attrs[ $attr ] = $attr_val;
