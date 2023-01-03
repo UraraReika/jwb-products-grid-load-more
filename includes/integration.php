@@ -21,7 +21,7 @@ class Integration {
 		add_filter( 'jet-woo-builder/templates/jet-woo-products/widget-attributes', [ $this, 'set_widget_attributes' ], 10, 4 );
 		add_filter( 'jet-woo-builder/shortcodes/jet-woo-products/final-query-args', function( $query_args ) {
 			$query      = new \WP_Query( $query_args );
-			error_log(json_encode( $query ));
+			//error_log(json_encode( $query ));
 			return $query_args;
 		} );
 
