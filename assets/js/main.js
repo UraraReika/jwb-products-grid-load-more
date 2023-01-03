@@ -7,19 +7,15 @@
 	let JetWooBuilderPGLM = {
 
 		init: function () {
-			let widgets = {
-				'jet-woo-products.default' : JetWooBuilderPGLM.productsGridLoadMore
-			};
 
-			$.each( widgets, function( widget, callback ) {
-				elementorFrontend.hooks.addAction( 'frontend/element_ready/' + widget, callback );
-			});
+			elementorFrontend.hooks.addAction( 'frontend/element_ready/jet-woo-products.default', JetWooBuilderPGLM.productsGridLoadMore );
 
 			$( document ).on( 'jet-filter-content-rendered', function( event, $scope ) {
 				JetWooBuilderPGLM.productsGridLoadMore( $scope.closest( '.elementor-element' ) );
 
 				pageHolder = 1;
 			} )
+
 		},
 
 		productsGridLoadMore: function ( $scope ) {
