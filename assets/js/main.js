@@ -38,7 +38,7 @@
 							$( triggerId ).removeAttr( 'style' );
 						}
 
-						$( document ).on( 'click', triggerId, function ( event ) {
+						$( document ).on( 'click.JetWooBuilderInfinityScroll', triggerId, function ( event ) {
 
 							event.preventDefault();
 
