@@ -35,15 +35,3 @@ add_action( 'plugins_loaded', 'pglm_plugin_init' );
 function pglm_plugin_init() {
 	require PGLM_PLUGIN_PATH . 'includes/plugin.php';
 }
-
-// Includes
-/*include( 'includes/pglm-load-more-integration.php' );*/
-
-// Set default widget object.
-//add_action( 'elementor/widget/before_render_content', 'pglm_store_default_widget_object', 0 );
-
-// Set JetSmartFilter settings to store.
-//add_filter( 'jet-smart-filters/providers/jet-woo-products-grid/settings-list', 'pglm_set_widget_setting_to_store' );
-
-// Trigger widget for loader.
-//add_filter( 'jet-woo-builder/shortcodes/jet-woo-products/query-args', 'pglm_trigger', 10, 2 );

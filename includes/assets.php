@@ -26,7 +26,7 @@ class Assets {
 	 */
 	function enqueue_scripts() {
 		wp_enqueue_script(
-			'pglm_main',
+			'pglm_frontend',
 			PGLM_PLUGIN_URL . 'assets/js/main.js',
 			[ 'jquery', 'elementor-frontend' ],
 			PGLM_PLUGIN_VERSION,
@@ -46,7 +46,7 @@ class Assets {
 	 */
 	function enqueue_styles() {
 		wp_enqueue_style(
-			'pglm_styles',
+			'pglm_frontend',
 			PGLM_PLUGIN_URL . 'assets/css/styles.css',
 			[],
 			PGLM_PLUGIN_VERSION

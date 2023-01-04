@@ -187,7 +187,7 @@
 					action: 'jet_woo_builder_load_more',
 					settings: settings,
 					query: query,
-					productsPerPage: productsNumber,
+					per_page: productsNumber,
 					page: page,
 					pages: pages
 				},

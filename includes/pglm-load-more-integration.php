@@ -82,7 +82,7 @@ function pglm_get_widget_attributes( string $attributes, array $settings, $query
 	if ( isset( $_REQUEST['action'] ) && 'jet_woo_builder_load_more' === $_REQUEST['action'] && isset( $_REQUEST['settings'] ) ) {
 		$default_settings  = $_REQUEST['settings'];
 		$pglm_query        = isset( $_REQUEST['query'] ) ? $_REQUEST['query'] : false;
-		$products_per_page = $_REQUEST['productsPerPage'];
+		$products_per_page = $_REQUEST['per_page'];
 		$products_page     = $_REQUEST['page'];
 		$products_pages    = $_REQUEST['pages'];
 

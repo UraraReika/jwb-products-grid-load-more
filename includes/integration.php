@@ -8,8 +8,52 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Integration {
 
-	public $page     = null;
-	public $paged    = null;
+	/**
+	 * Query.
+	 *
+	 * Hold current query.
+	 *
+	 * @since  1.2.0
+	 * @access public
+	 *
+	 * @var null
+	 */
+	public $query = null;
+
+	/**
+	 * Page.
+	 *
+	 * Hold current page number.
+	 *
+	 * @since  1.2.0
+	 * @access public
+	 *
+	 * @var null
+	 */
+	public $page = null;
+
+	/**
+	 * Paged
+	 *
+	 * Hold maximum page count.
+	 *
+	 * @since  1.2.0
+	 * @access public
+	 *
+	 * @var null
+	 */
+	public $paged = null;
+
+	/**
+	 * Settings.
+	 *
+	 * Hold default widget settings.
+	 *
+	 * @since  1.2.0
+	 * @access public
+	 *
+	 * @var array
+	 */
 	public $settings = [];
 
 	public function __construct() {
@@ -19,51 +63,72 @@ class Integration {
 
 		// Set Custom widget data attributes.
 		add_filter( 'jet-woo-builder/templates/jet-woo-products/widget-attributes', [ $this, 'set_widget_attributes' ], 10, 4 );
-		add_filter( 'jet-woo-builder/shortcodes/jet-woo-products/final-query-args', function( $query_args ) {
-			$query      = new \WP_Query( $query_args );
-			//error_log(json_encode( $query ));
-			return $query_args;
-		} );
 
-		add_action( 'jet-woo-builder/query/load-more', function ( $query, $shortcode ) {
+		// Set JetSmartFilter settings to store.
+		add_filter( 'jet-smart-filters/providers/jet-woo-products-grid/settings-list', [ $this, 'set_provider_stored_settings_list' ] );
 
-			global $wp_query;
+		// Query arguments handling.
+		add_filter( 'jet-woo-builder/shortcodes/jet-woo-products/final-query-args', [ $this, 'handle_query_args' ] );
 
-			//error_log(json_encode( $query ));
-			//error_log(json_encode( $wp_query ));
-			/*error_log(json_encode( $query ));
-			error_log(json_encode( $query->query_vars ));
-			error_log(json_encode( $query->max_num_pages ));*/
+		// Set default settings to store.
+		add_action( 'elementor/widget/before_render_content', [ $this, 'set_stored_settings' ] );
 
-			$this->page  = $query->get( 'paged' ) ? $query->get( 'paged' ) : 1;
-			$this->paged = $query->max_num_pages;
-			//var_dump( 1 );
+	}
 
-		}, 10, 2 );
+	/**
+	 * Handle query args.
+	 *
+	 * Handle current query arguments.
+	 *
+	 * @param array $query_args Query arguments list.
+	 *
+	 * @return mixed
+	 */
+	public function handle_query_args( $query_args ) {
 
-		add_action( 'elementor/widget/before_render_content', function ( $widget ) {
+		$query = new \WP_Query( $query_args );
 
-			if ( 'jet-woo-products' !== $widget->get_name() ) {
-				return;
-			}
+		$this->query = $query;
+		$this->page  = $query->get( 'paged' ) ? $query->get( 'paged' ) : 1;
+		$this->paged = $query->max_num_pages;
 
-			$widget_settings = $widget->get_settings();
-			$stored_settings = $this->settings_to_store();
-			$settings        = [];
+		return $query_args;
 
-			foreach ( $stored_settings as $key ) {
-				if ( false !== strpos( $key, 'selected_' ) ) {
-					$settings[ $key ] = isset( $widget_settings[ $key ] ) ? htmlspecialchars( $widget->__render_icon( str_replace( 'selected_', '', $key ), '%s', '', false ) ) : '';
-				} else {
-					$settings[ $key ] = $widget_settings[ $key ] ?? '';
-				}
-			}
+	}
 
-			$settings['_widget_id'] = $widget->get_id();
+	/**
+	 * Default query.
+	 *
+	 * Store default query args.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param $query
+	 *
+	 * @return array
+	 */
+	function get_default_query( $query ) {
 
-			$this->settings = $settings;
+		$default_query = [
+			'post_type'      => 'product',
+			'wc_query'       => $query->get( 'wc_query' ),
+			'tax_query'      => $query->get( 'tax_query' ),
+			'orderby'        => $query->get( 'orderby' ),
+			'order'          => $query->get( 'order' ),
+			'paged'          => $query->get( 'paged' ),
+			'posts_per_page' => $query->get( 'posts_per_page' ),
+		];
 
-		} );
+		if ( $query->get( 'taxonomy' ) ) {
+			$default_query['taxonomy'] = $query->get( 'taxonomy' );
+			$default_query['term']     = $query->get( 'term' );
+		}
+
+		if ( is_search() ) {
+			$default_query['s'] = $query->get( 's' );
+		}
+
+		return $default_query;
 
 	}
 
@@ -131,9 +196,15 @@ class Integration {
 
 	}
 
+	/**
+	 * @param $attrs
+	 * @param $settings
+	 * @param $query
+	 * @param $shortcode
+	 *
+	 * @return string
+	 */
 	public function set_widget_attributes( $attrs, $settings, $query, $shortcode ) {
-
-		//error_log($settings['number']);
 
 		$load_more = ! empty( $settings['enable_load_more'] ) ? filter_var( $settings['enable_load_more'], FILTER_VALIDATE_BOOLEAN ) : false;
 		$carousel  = ! empty( $settings['carousel_enabled'] ) ? filter_var( $settings['carousel_enabled'], FILTER_VALIDATE_BOOLEAN ) : false;
@@ -142,27 +213,98 @@ class Integration {
 			return $attrs;
 		}
 
-		$per_page           = intval( $settings['number'] );
-		$settings = $this->get_stored_settings( $settings, $shortcode );
+		$widget_query = [];
+		$per_page     = $settings['number'] ?? 4;
+		$page         = $this->page;
+		$paged        = $this->paged;
 
-		$attrs .= sprintf(
+		if ( isset( $settings['use_current_query'] ) && filter_var( $settings['use_current_query'], FILTER_VALIDATE_BOOLEAN ) ) {
+			$widget_query = $this->get_default_query( $this->query );
+		}
+
+		if ( isset( $_REQUEST['action'] ) && 'jet_smart_filters' === $_REQUEST['action'] ) {
+			$request_query = new \WP_Query( jet_smart_filters()->query->get_query_args() );
+			$widget_query    = $this->get_default_query( $request_query );
+			$page     = $request_query->query_vars['paged'] ? $request_query->query_vars['paged'] : 1;
+			$paged    = $request_query->max_num_pages;
+		}
+
+		if ( isset( $_REQUEST['action'] ) && 'jet_woo_builder_load_more' === $_REQUEST['action'] ) {
+			$widget_query = $_REQUEST['query'] ?? [];
+			$per_page = $_REQUEST['per_page'] ?? 4;
+			$page     = $_REQUEST['page'] ?? 1;
+			$paged    = $_REQUEST['pages'] ?? 1;
+
+			if ( ! empty( $widget_query ) ) {
+				if ( isset( $widget_query['posts_per_page'] ) ) {
+					$widget_query['posts_per_page'] += $per_page;
+				} else {
+					$widget_query['posts_per_page'] = $settings['number'] + $per_page;
+				}
+			}
+		}
+
+		$settings = $this->get_stored_settings( $settings, $shortcode );
+		$attrs    .= sprintf(
 			' data-load-more-settings="%s" %s data-product-per-page="%s" data-products-page="%s"  data-products-pages="%s" ',
 			htmlspecialchars( json_encode( $settings ) ),
-			'',
+			! empty( $widget_query ) ? 'data-load-more-query="' . htmlspecialchars( json_encode( $widget_query ) ) . '"' : '',
 			$per_page,
-			$this->page,
-			$this->paged
+			$page,
+			$paged
 		);
-
-		//var_dump( 2 );
-		/*var_dump( $attrs );
-		var_dump( $query );
-		var_dump( $settings );*/
 
 		return $attrs;
 
 	}
 
+	/**
+	 * Set stored settings.
+	 *
+	 * Handle widget settings and store them in global variable.
+	 *
+	 * @since  1.2.0
+	 * @access public
+	 *
+	 * @param object $widget Widget instance.
+	 */
+	public function set_stored_settings( $widget ) {
+
+		if ( 'jet-woo-products' !== $widget->get_name() ) {
+			return;
+		}
+
+		$widget_settings = $widget->get_settings();
+		$settings_list   = $this->get_stored_settings_list();
+		$settings        = [];
+
+		foreach ( $settings_list as $key ) {
+			if ( false !== strpos( $key, 'selected_' ) ) {
+				$settings[ $key ] = isset( $widget_settings[ $key ] ) ? htmlspecialchars( $widget->__render_icon( str_replace( 'selected_', '', $key ), '%s', '', false ) ) : '';
+			} else {
+				$settings[ $key ] = $widget_settings[ $key ] ?? '';
+			}
+		}
+
+		$settings['_widget_id'] = $widget->get_id();
+
+		$this->settings = $settings;
+
+	}
+
+	/**
+	 * Get stored settings.
+	 *
+	 * Return all the necessary settings.
+	 *
+	 * @since  1.2.0
+	 * @access public
+	 *
+	 * @param array  $settings  Settings list.
+	 * @param object $shortcode Widget shortcode instance.
+	 *
+	 * @return array
+	 */
 	public function get_stored_settings( $settings, $shortcode ) {
 
 		if ( empty( $this->settings ) ) {
@@ -183,7 +325,17 @@ class Integration {
 
 	}
 
-	public function settings_to_store() {
+	/**
+	 * Get stored settings list.
+	 *
+	 * Returns list of the widget settings to store.
+	 *
+	 * @since  1.2.0
+	 * @access public
+	 *
+	 * @return mixed|void
+	 */
+	public function get_stored_settings_list() {
 		return apply_filters( 'jet-woo-builder/products-grid/load-more/settings-list', [
 			'show_compare',
 			'compare_button_order',
@@ -234,6 +386,22 @@ class Integration {
 			'load_more_type',
 			'load_more_trigger_id',
 		] );
+	}
+
+	/**
+	 * Set provider stored settings list.
+	 *
+	 * Set load more settings for JetSmartFilter provider.
+	 *
+	 * @since  1.2.0
+	 * @access public
+	 *
+	 * @param array $list List of settings list to store.
+	 *
+	 * @return array
+	 */
+	public function set_provider_stored_settings_list( $list ) {
+		return array_merge( $this->get_stored_settings_list(), $list );
 	}
 
 }
