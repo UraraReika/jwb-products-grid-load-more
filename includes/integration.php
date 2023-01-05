@@ -199,12 +199,12 @@ class Integration {
 	/**
 	 * @param $attrs
 	 * @param $settings
-	 * @param $query
+	 * @param $products
 	 * @param $shortcode
 	 *
 	 * @return string
 	 */
-	public function set_widget_attributes( $attrs, $settings, $query, $shortcode ) {
+	public function set_widget_attributes( $attrs, $settings, $products, $shortcode ) {
 
 		$load_more = ! empty( $settings['enable_load_more'] ) ? filter_var( $settings['enable_load_more'], FILTER_VALIDATE_BOOLEAN ) : false;
 		$carousel  = ! empty( $settings['carousel_enabled'] ) ? filter_var( $settings['carousel_enabled'], FILTER_VALIDATE_BOOLEAN ) : false;
@@ -213,38 +213,39 @@ class Integration {
 			return $attrs;
 		}
 
-		$per_page     = $settings['number'] ?? 4;
-		$widget_query = [];
+		$products_per_page = $settings['number'] ?? 4;
+		$query             = [];
 
 		if ( isset( $settings['use_current_query'] ) && filter_var( $settings['use_current_query'], FILTER_VALIDATE_BOOLEAN ) ) {
-			$widget_query = $this->get_default_query( $this->query );
+			$query = $this->get_default_query( $this->query );
 		}
 
 		if ( isset( $_REQUEST['action'] ) && 'jet_smart_filters' === $_REQUEST['action'] ) {
 			$request_query = new \WP_Query( jet_smart_filters()->query->get_query_args() );
-			$widget_query  = $this->get_default_query( $request_query );
+			$query         = $this->get_default_query( $request_query );
 		}
 
 		if ( isset( $_REQUEST['action'] ) && 'jet_woo_builder_load_more' === $_REQUEST['action'] ) {
-			$widget_query = $_REQUEST['query'] ?? [];
-			$per_page     = $_REQUEST['per_page'] ?? 4;
-			$this->page   = $_REQUEST['page'] ?? 1;
-			$this->paged  = $_REQUEST['pages'] ?? 1;
+			$query             = $_REQUEST['query'] ?? [];
+			$products_per_page = $_REQUEST['per_page'] ?? 4;
+			$this->page        = $_REQUEST['page'] ?? 1;
+			$this->paged       = $_REQUEST['pages'] ?? 1;
 
-			if ( ! empty( $widget_query ) ) {
-				$widget_query['posts_per_page'] = ( $widget_query['posts_per_page'] ?? $settings['number'] ) + $per_page;
+			if ( ! empty( $query ) ) {
+				$query['posts_per_page'] = ( $query['posts_per_page'] ?? $settings['number'] ) + $products_per_page;
 			}
 		}
 
-		$settings = $this->get_stored_settings( $settings, $shortcode );
-		$attrs    .= sprintf(
-			' data-load-more-settings="%s" %s data-product-per-page="%s" data-products-page="%s"  data-products-pages="%s" ',
-			htmlspecialchars( json_encode( $settings ) ),
-			! empty( $widget_query ) ? 'data-load-more-query="' . htmlspecialchars( json_encode( $widget_query ) ) . '"' : '',
-			$per_page,
-			$this->page,
-			$this->paged
-		);
+		$settings       = $this->get_stored_settings( $settings, $shortcode );
+		$load_more_data = [
+			'settings'          => $settings,
+			'query'             => $query,
+			'products_per_page' => $products_per_page,
+			'page'              => $this->page,
+			'pages'             => $this->paged,
+		];
+
+		$attrs .= sprintf( ' data-load-more="%s" ', htmlspecialchars( json_encode( $load_more_data ) ) );
 
 		return $attrs;
 
