@@ -10,9 +10,7 @@
 
 			elementorFrontend.hooks.addAction( 'frontend/element_ready/jet-woo-products.default', JetWooBuilderPGLM.productsGridLoadMore );
 
-			$( document ).on( 'jet-filter-content-rendered', function( event, $scope ) {
-				JetWooBuilderPGLM.productsGridLoadMore( $scope.closest( '.elementor-element' ) );
-
+			$( document ).on( 'jet-filter-content-rendered', () => {
 				pageHolder = 1;
 			} )
 

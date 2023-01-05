@@ -213,10 +213,8 @@ class Integration {
 			return $attrs;
 		}
 
-		$widget_query = [];
 		$per_page     = $settings['number'] ?? 4;
-		$page         = $this->page;
-		$paged        = $this->paged;
+		$widget_query = [];
 
 		if ( isset( $settings['use_current_query'] ) && filter_var( $settings['use_current_query'], FILTER_VALIDATE_BOOLEAN ) ) {
 			$widget_query = $this->get_default_query( $this->query );
@@ -224,23 +222,17 @@ class Integration {
 
 		if ( isset( $_REQUEST['action'] ) && 'jet_smart_filters' === $_REQUEST['action'] ) {
 			$request_query = new \WP_Query( jet_smart_filters()->query->get_query_args() );
-			$widget_query    = $this->get_default_query( $request_query );
-			$page     = $request_query->query_vars['paged'] ? $request_query->query_vars['paged'] : 1;
-			$paged    = $request_query->max_num_pages;
+			$widget_query  = $this->get_default_query( $request_query );
 		}
 
 		if ( isset( $_REQUEST['action'] ) && 'jet_woo_builder_load_more' === $_REQUEST['action'] ) {
 			$widget_query = $_REQUEST['query'] ?? [];
-			$per_page = $_REQUEST['per_page'] ?? 4;
-			$page     = $_REQUEST['page'] ?? 1;
-			$paged    = $_REQUEST['pages'] ?? 1;
+			$per_page     = $_REQUEST['per_page'] ?? 4;
+			$this->page   = $_REQUEST['page'] ?? 1;
+			$this->paged  = $_REQUEST['pages'] ?? 1;
 
 			if ( ! empty( $widget_query ) ) {
-				if ( isset( $widget_query['posts_per_page'] ) ) {
-					$widget_query['posts_per_page'] += $per_page;
-				} else {
-					$widget_query['posts_per_page'] = $settings['number'] + $per_page;
-				}
+				$widget_query['posts_per_page'] = ( $widget_query['posts_per_page'] ?? $settings['number'] ) + $per_page;
 			}
 		}
 
@@ -250,8 +242,8 @@ class Integration {
 			htmlspecialchars( json_encode( $settings ) ),
 			! empty( $widget_query ) ? 'data-load-more-query="' . htmlspecialchars( json_encode( $widget_query ) ) . '"' : '',
 			$per_page,
-			$page,
-			$paged
+			$this->page,
+			$this->paged
 		);
 
 		return $attrs;
