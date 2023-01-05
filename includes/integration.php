@@ -69,70 +69,11 @@ class Integration {
 
 		// Query arguments handling.
 		add_filter( 'jet-woo-builder/shortcodes/jet-woo-products/final-query-args', [ $this, 'handle_query_args' ] );
+		add_action( 'jet-engine/query-builder/listings/on-query', [$this, 'handle_custom_query'] );
 
 		// Set default settings to store.
 		add_action( 'elementor/widget/before_render_content', [ $this, 'set_stored_settings' ] );
 
-	}
-
-	/**
-	 * Handle query args.
-	 *
-	 * Handle current query arguments.
-	 *
-	 * @since  1.2.0
-	 * @access public
-	 *
-	 * @param array $query_args Query arguments list.
-	 *
-	 * @return mixed
-	 */
-	public function handle_query_args( $query_args ) {
-
-		$query = new \WP_Query( $query_args );
-
-		$this->query = $query;
-		$this->page  = $query->get( 'paged' ) ? $query->get( 'paged' ) : 1;
-		$this->paged = $query->max_num_pages;
-
-		return $query_args;
-
-	}
-
-	/**
-	 * Default query.
-	 *
-	 * Store default query args.
-	 *
-	 * @since  1.1.0
-	 * @access public
-	 *
-	 * @param object $query WP Query inctance.
-	 *
-	 * @return array
-	 */
-	function get_default_query( $query ) {
-
-		$default_query = [
-			'post_type'      => 'product',
-			'wc_query'       => $query->get( 'wc_query' ),
-			'tax_query'      => $query->get( 'tax_query' ),
-			'orderby'        => $query->get( 'orderby' ),
-			'order'          => $query->get( 'order' ),
-			'paged'          => $query->get( 'paged' ),
-			'posts_per_page' => $query->get( 'posts_per_page' ),
-		];
-
-		if ( $query->get( 'taxonomy' ) ) {
-			$default_query['taxonomy'] = $query->get( 'taxonomy' );
-			$default_query['term']     = $query->get( 'term' );
-		}
-
-		if ( is_search() ) {
-			$default_query['s'] = $query->get( 's' );
-		}
-
-		return $default_query;
 
 	}
 
@@ -201,6 +142,83 @@ class Integration {
 	}
 
 	/**
+	 * Handle query args.
+	 *
+	 * Handle current query arguments.
+	 *
+	 * @since  1.2.0
+	 * @access public
+	 *
+	 * @param array $query_args Query arguments list.
+	 *
+	 * @return mixed
+	 */
+	public function handle_query_args( $query_args ) {
+
+		$query = new \WP_Query( $query_args );
+
+		$this->query = $query;
+		$this->page  = $query->get( 'paged' ) ? $query->get( 'paged' ) : 1;
+		$this->paged = $query->max_num_pages;
+
+		return $query_args;
+
+	}
+
+	/**
+	 * Handle custom query.
+	 *
+	 * Save JetEngine custom query instance for further handling.
+	 *
+	 * @since  1.2.0
+	 * @access public
+	 *
+	 * @param object $query JetEngine custom query instance.
+	 *
+	 * @return void
+	 */
+	public function handle_custom_query( $query ) {
+		$this->query = $query;
+	}
+
+	/**
+	 * Default query.
+	 *
+	 * Store default query args.
+	 *
+	 * @since  1.1.0
+	 * @access public
+	 *
+	 * @param object $query WP Query inctance.
+	 *
+	 * @return array
+	 */
+	function get_default_query( $query ) {
+
+		$default_query = [
+			'post_type'      => 'product',
+			'wc_query'       => $query->get( 'wc_query' ),
+			'tax_query'      => $query->get( 'tax_query' ),
+			'orderby'        => $query->get( 'orderby' ),
+			'order'          => $query->get( 'order' ),
+			'paged'          => $query->get( 'paged' ),
+			'posts_per_page' => $query->get( 'posts_per_page' ),
+		];
+
+		if ( $query->get( 'taxonomy' ) ) {
+			$default_query['taxonomy'] = $query->get( 'taxonomy' );
+			$default_query['term']     = $query->get( 'term' );
+		}
+
+		if ( is_search() ) {
+			$default_query['s'] = $query->get( 's' );
+		}
+
+		return $default_query;
+
+	}
+
+	/**
 	 * Set widget attributes.
 	 *
 	 * Returns custom attributes for load more functionality.
@@ -226,6 +244,21 @@ class Integration {
 
 		$products_per_page = $settings['number'] ?? 4;
 		$query             = [];
+
+		if ( isset( $settings['enable_custom_query'] ) && filter_var( $settings['enable_custom_query'], FILTER_VALIDATE_BOOLEAN ) ) {
+			if ( empty( $settings['custom_query_id'] ) ) {
+				return $attrs;
+			}
+
+			$custom_query = new \WP_Query( $this->query->get_query_args() );
+
+			$custom_query->set( 'posts_per_page', $this->query->get_items_page_count() );
+
+			$query             = $this->get_default_query( $custom_query );
+			$products_per_page = $this->query->get_items_page_count();
+			$this->page        = $this->query->get_current_items_page();
+			$this->paged       = $this->query->get_items_pages_count();
+		}
 
 		if ( isset( $settings['use_current_query'] ) && filter_var( $settings['use_current_query'], FILTER_VALIDATE_BOOLEAN ) ) {
 			$query = $this->get_default_query( $this->query );
