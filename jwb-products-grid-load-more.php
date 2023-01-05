@@ -33,5 +33,43 @@ add_action( 'plugins_loaded', 'pglm_plugin_init' );
  * @return void
  */
 function pglm_plugin_init() {
+
+	if ( ! function_exists( 'jet_woo_builder' ) ) {
+		add_action( 'admin_notices', 'pglm_required_plugins_admin_notice' );
+		return;
+	}
+
 	require PGLM_PLUGIN_PATH . 'includes/plugin.php';
+
+}
+
+/**
+ * Required plugins admin notice.
+ *
+ * Show missing plugins admin notice.
+ *
+ * @since  1.2.0
+ *
+ * @return void
+ */
+function pglm_required_plugins_admin_notice() {
+
+	if ( isset( $_GET['activate'] ) ) {
+		unset( $_GET['activate'] );
+	}
+
+	$jwb_link = sprintf(
+		'<a href="%s">%s</a>',
+		admin_url() . 'admin.php?page=jet-dashboard-license-page',
+		'<strong>' . __( 'JetWooBuilder', 'jet-woo-builder' ) . '</strong>'
+	);
+
+	$message = sprintf(
+		__( '"%s" requires "%s" to be installed and activated.', 'jwb-custom-product-badges' ),
+		'<strong>' . __( 'JetWooBuilder - Custom Products Badges', 'jet-woo-builder' ) . '</strong>',
+		$jwb_link
+	);
+
+	printf( '<div class="notice notice-warning is-dismissible"><p>%s</p></div>', $message );
+
 }

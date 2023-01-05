@@ -18,7 +18,7 @@ class Assets {
 	 *
 	 * Enqueue plugin style and script files.
 	 *
-	 * @since 1.2.0
+	 * @since  1.2.0
 	 * @access public
 	 *
 	 * @return void
@@ -27,7 +27,7 @@ class Assets {
 
 		wp_enqueue_script(
 			'pglm_frontend',
-			PGLM_PLUGIN_URL . 'assets/js/frontend.js',
+			PGLM_PLUGIN_URL . 'assets/js/frontend' . $this->suffix() . '.js',
 			[ 'jquery' ],
 			PGLM_PLUGIN_VERSION,
 			true
@@ -35,11 +35,25 @@ class Assets {
 
 		wp_enqueue_style(
 			'pglm_frontend',
-			PGLM_PLUGIN_URL . 'assets/css/styles.css',
+			PGLM_PLUGIN_URL . 'assets/css/frontend.css',
 			[],
 			PGLM_PLUGIN_VERSION
 		);
 
+	}
+
+	/**
+	 * Suffix.
+	 *
+	 * Returns minified suffix for plugin scripts
+	 *
+	 * @since  1.2.0
+	 * @access public
+	 *
+	 * @return string
+	 */
+	public function suffix() {
+		return defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 	}
 
 }

@@ -80,6 +80,9 @@ class Integration {
 	 *
 	 * Handle current query arguments.
 	 *
+	 * @since  1.2.0
+	 * @access public
+	 *
 	 * @param array $query_args Query arguments list.
 	 *
 	 * @return mixed
@@ -101,9 +104,10 @@ class Integration {
 	 *
 	 * Store default query args.
 	 *
-	 * @since 1.1.0
+	 * @since  1.1.0
+	 * @access public
 	 *
-	 * @param $query
+	 * @param object $query WP Query inctance.
 	 *
 	 * @return array
 	 */
@@ -157,7 +161,7 @@ class Integration {
 			'enable_load_more',
 			[
 				'type'               => \Elementor\Controls_Manager::SWITCHER,
-				'label'              => __( 'Enable Load More', 'jet-woo-builder' ),
+				'label'              => __( 'Enable', 'jet-woo-builder' ),
 				'frontend_available' => true,
 			]
 		);
@@ -166,7 +170,7 @@ class Integration {
 			'load_more_type',
 			[
 				'type'               => \Elementor\Controls_Manager::SELECT,
-				'label'              => __( 'Load More Type', 'jet-woo-builder' ),
+				'label'              => __( 'Type', 'jet-woo-builder' ),
 				'options'            => [
 					'click'  => __( 'By Button Click', 'jet-woo-builder' ),
 					'scroll' => __( 'By Page Scrolling', 'jet-woo-builder' ),
@@ -183,7 +187,7 @@ class Integration {
 			'load_more_trigger_id',
 			[
 				'type'               => \Elementor\Controls_Manager::TEXT,
-				'label'              => __( 'Load More Trigger ID', 'jet-woo-builder' ),
+				'label'              => __( 'Trigger ID', 'jet-woo-builder' ),
 				'frontend_available' => true,
 				'condition'          => [
 					'enable_load_more' => 'yes',
@@ -197,10 +201,17 @@ class Integration {
 	}
 
 	/**
-	 * @param $attrs
-	 * @param $settings
-	 * @param $products
-	 * @param $shortcode
+	 * Set widget attributes.
+	 *
+	 * Returns custom attributes for load more functionality.
+	 *
+	 * @since  1.0.0
+	 * @access public
+	 *
+	 * @param string $attrs     Attributes string.
+	 * @param array  $settings  Settings list.
+	 * @param array  $products  Products list.
+	 * @param object $shortcode Widget shortcode instance.
 	 *
 	 * @return string
 	 */

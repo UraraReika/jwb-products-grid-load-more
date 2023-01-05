@@ -1,0 +1,62 @@
+.shimmer {
+	opacity: .7;
+	animation: shimmer-loading 1s linear infinite alternate;
+
+	&-image {
+		width: 100%;
+		height: 150px;
+		margin-bottom: 15px;
+		border-radius: 5px;
+	}
+
+	&-content-wrapper {
+		padding: 15px;
+	}
+
+	&-title {
+		width: 90%;
+		height: 15px;
+		border-radius: 3px;
+		margin-bottom: 5px;
+	}
+
+	&-price {
+		width: 20%;
+		height: 15px;
+		border-radius: 3px;
+		margin-bottom: 10px;
+	}
+
+	&-text-wrapper {
+		margin-bottom: 20px;
+	}
+
+	&-text {
+		width: 100%;
+		height: 10px;
+		margin-bottom: 3px;
+		border-radius: 3px;
+
+		&:last-child {
+			margin-bottom: 0;
+			width: 80%;
+		}
+	}
+
+	&--btn {
+		width: 70%;
+		height: 40px;
+		margin: 0 auto;
+		border-radius: 15px;
+	}
+}
+
+@keyframes shimmer-loading {
+	0% {
+		background-color: hsl(200, 20%, 70%);
+	}
+
+	100% {
+		background-color: hsl(200, 20%, 95%);
+	}
+}
