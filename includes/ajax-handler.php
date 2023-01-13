@@ -73,6 +73,11 @@ class Ajax_Handler {
 
 		$query->set( 'posts_per_page', $query->get( 'posts_per_page' ) + $_REQUEST['per_page'] ?? 4 );
 
+		if ( $query->get( 'paged' ) ) {
+			$query->set( 'offset', ( $query->get( 'paged' ) - 1 ) * $_REQUEST['per_page'] ?? 4 );
+			$query->set( 'paged', 0 );
+		}
+
 	}
 
 }

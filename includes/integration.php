@@ -69,11 +69,10 @@ class Integration {
 
 		// Query arguments handling.
 		add_filter( 'jet-woo-builder/shortcodes/jet-woo-products/final-query-args', [ $this, 'handle_query_args' ] );
-		add_action( 'jet-engine/query-builder/listings/on-query', [$this, 'handle_custom_query'] );
+		add_action( 'jet-engine/query-builder/listings/on-query', [ $this, 'handle_custom_query' ] );
 
 		// Set default settings to store.
 		add_action( 'elementor/widget/before_render_content', [ $this, 'set_stored_settings' ] );
-
 
 	}
 
@@ -265,8 +264,7 @@ class Integration {
 		}
 
 		if ( isset( $_REQUEST['action'] ) && 'jet_smart_filters' === $_REQUEST['action'] ) {
-			$request_query = new \WP_Query( jet_smart_filters()->query->get_query_args() );
-			$query         = $this->get_default_query( $request_query );
+			$query = jet_smart_filters()->query->get_query_args();
 		}
 
 		if ( isset( $_REQUEST['action'] ) && 'jet_woo_builder_load_more' === $_REQUEST['action'] ) {

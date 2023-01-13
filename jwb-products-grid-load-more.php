@@ -65,8 +65,8 @@ function pglm_required_plugins_admin_notice() {
 	);
 
 	$message = sprintf(
-		__( '"%s" requires "%s" to be installed and activated.', 'jwb-custom-product-badges' ),
-		'<strong>' . __( 'JetWooBuilder - Custom Products Badges', 'jet-woo-builder' ) . '</strong>',
+		__( '"%s" requires "%s" to be installed and activated.', 'jet-woo-builder' ),
+		'<strong>' . __( 'JetWooBuilder - Products Grid Load More', 'jet-woo-builder' ) . '</strong>',
 		$jwb_link
 	);
 

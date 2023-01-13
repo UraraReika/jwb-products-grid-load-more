@@ -106,10 +106,11 @@
 			const shimmer = JetWooBuilderPGLM.getShimmerMarkup();
 
 			if ( currentPage < data.page ){
-				for ( let i = 0; i < data.products_per_page; i++ ) {
+				for ( let i = 0; i < data.settings.columns; i++ ) {
 					$wrapper.append( shimmer );
 				}
 			}
+
 			scrollable = false;
 			currentPage = data.page;
 
