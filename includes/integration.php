@@ -265,6 +265,8 @@ class Integration {
 
 		if ( isset( $_REQUEST['action'] ) && 'jet_smart_filters' === $_REQUEST['action'] ) {
 			$query = jet_smart_filters()->query->get_query_args();
+		} elseif ( ! empty( jet_smart_filters()->query->get_query_args() ) ) {
+			$query = $this->get_default_query( $this->query );
 		}
 
 		if ( isset( $_REQUEST['action'] ) && 'jet_woo_builder_load_more' === $_REQUEST['action'] ) {
